@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ticket Monitor</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --tinte:#0E1218; --flaeche:#161C25; --hoch:#1D2530;
+  --linie:#2A3441; --linie2:#3A4655;
+  --text:#DCE3EC; --matt:#8494A8; --schwach:#5D6C7E;
+  --bernstein:#D98C2B; --bernstein2:#E8A64B;
+  --gruen:#7CC28E; --rot:#DB8686;
+  --r:3px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;background:var(--tinte);color:var(--text);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.55;
+  -webkit-text-size-adjust:100%;
+}
+.mono,td.num,th.num,.kpi__wert{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+h1,h2{margin:0;font-weight:600;line-height:1.2}
+a{color:var(--bernstein)}
+.wrap{width:min(100% - 2rem,1500px);margin-inline:auto}
+@media (min-width:768px){.wrap{width:min(100% - 3rem,1500px)}}
+
+header{background:var(--flaeche);border-bottom:1px solid var(--linie);position:sticky;top:0;z-index:20}
+.kopf{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;padding:1rem 0}
+.marke{font-size:1.05rem}
+.marke span{color:var(--bernstein)}
+.stand{font-size:.8rem;color:var(--schwach);font-family:"IBM Plex Mono",monospace}
+main{padding:1.75rem 0 4rem}
+
+.kpis{display:grid;gap:1px;background:var(--linie);border:1px solid var(--linie);border-radius:var(--r);overflow:hidden;grid-template-columns:repeat(2,1fr)}
+@media (min-width:900px){.kpis{grid-template-columns:repeat(5,1fr)}}
+.kpi{background:var(--flaeche);padding:.95rem 1.05rem}
+.kpi__label{font-size:.7rem;letter-spacing:.06em;color:var(--schwach);text-transform:uppercase;margin-bottom:.3rem}
+.kpi__wert{font-size:1.45rem;font-weight:600;line-height:1.1}
+.kpi__fuss{font-size:.75rem;color:var(--schwach);margin-top:.15rem}
+
+.leiste{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin:1.75rem 0 1rem}
+input,select{background:var(--tinte);color:var(--text);border:1px solid var(--linie2);border-radius:var(--r);padding:.5rem .65rem;font:inherit;font-size:.9rem;min-height:40px}
+input:focus,select:focus{outline:2px solid var(--bernstein);outline-offset:-1px}
+input[type="search"]{min-width:220px;flex:1 1 220px}
+.schalter{display:inline-flex;align-items:center;gap:.45rem;font-size:.88rem;color:var(--matt);cursor:pointer;user-select:none}
+.schalter input{min-height:auto;width:16px;height:16px;accent-color:var(--bernstein)}
+
+.rolle{overflow-x:auto;border:1px solid var(--linie);border-radius:var(--r);background:var(--flaeche)}
+table{width:100%;border-collapse:collapse;font-size:.86rem;min-width:1180px}
+th,td{padding:.55rem .65rem;text-align:left;border-bottom:1px solid var(--linie);white-space:nowrap}
+thead th{background:var(--hoch);font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;color:var(--schwach);font-weight:600;position:sticky;top:0;cursor:pointer;user-select:none}
+thead th:hover{color:var(--text)}
+thead th.aktiv{color:var(--bernstein)}
+th.num,td.num{text-align:right}
+tbody tr:hover{background:var(--hoch)}
+td.name{white-space:normal;min-width:200px;font-weight:500}
+td.name a{text-decoration:none;color:inherit;border-bottom:1px solid transparent}
+td.name a:hover{border-bottom-color:var(--bernstein)}
+.pos{color:var(--gruen)}.neg{color:var(--rot)}
+.pille{display:inline-block;padding:.1rem .45rem;border-radius:20px;font-size:.72rem;font-weight:600;font-family:"IBM Plex Mono",monospace}
+.p-ja{background:rgba(124,194,142,.16);color:var(--gruen)}
+.p-nein{background:rgba(219,134,134,.14);color:var(--rot)}
+.p-k{background:rgba(93,108,126,.18);color:var(--matt)}
+.spark{display:block}
+.leer{padding:2.5rem;text-align:center;color:var(--schwach)}
+
+.raster2{display:grid;gap:1.25rem;margin-top:2.25rem}
+@media (min-width:1000px){.raster2{grid-template-columns:1fr 1.4fr}}
+.karte{background:var(--flaeche);border:1px solid var(--linie);border-radius:var(--r);padding:1.1rem 1.25rem}
+.karte h2{font-size:.95rem;margin-bottom:.9rem;color:var(--bernstein)}
+.saison{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;align-items:end;height:130px;margin-bottom:.5rem}
+.saison div{background:var(--linie2);border-radius:2px 2px 0 0;min-height:2px;transition:background .15s}
+.saison div:hover{background:var(--bernstein)}
+.saison-x{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;font-size:.62rem;color:var(--schwach);text-align:center;font-family:"IBM Plex Mono",monospace}
+.bench{font-size:.82rem}
+.bench tr td{white-space:normal;padding:.45rem .5rem;vertical-align:top}
+.warn{color:var(--rot);font-size:.82rem;margin-top:.9rem;line-height:1.5}
+footer{border-top:1px solid var(--linie);margin-top:3rem;padding:1.5rem 0;color:var(--schwach);font-size:.82rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap kopf">
+    <h1 class="marke">Ticket<span>Monitor</span></h1>
+    <div class="stand" id="stand">lädt…</div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="kpis">
+    <div class="kpi"><div class="kpi__label">Events</div><div class="kpi__wert" id="k1">–</div><div class="kpi__fuss" id="k1f"></div></div>
+    <div class="kpi"><div class="kpi__label">Über Schwelle</div><div class="kpi__wert" id="k2">–</div><div class="kpi__fuss" id="k2f"></div></div>
+    <div class="kpi"><div class="kpi__label">Median Aufschlag</div><div class="kpi__wert" id="k3">–</div><div class="kpi__fuss">Preis geteilt durch Nennwert</div></div>
+    <div class="kpi"><div class="kpi__label">Median Rendite p.a.</div><div class="kpi__wert" id="k4">–</div><div class="kpi__fuss">nach Gebühr, auf Kapitalbindung</div></div>
+    <div class="kpi"><div class="kpi__label">Messpunkte</div><div class="kpi__wert" id="k5">–</div><div class="kpi__fuss">seit Beginn der Aufzeichnung</div></div>
+  </div>
+
+  <div class="leiste">
+    <input type="search" id="suche" placeholder="Event, Venue oder Stadt suchen" aria-label="Suche">
+    <select id="land" aria-label="Land"><option value="">Alle Länder</option></select>
+    <select id="quelle" aria-label="Quelle"><option value="">Alle Quellen</option></select>
+    <label class="schalter"><input type="checkbox" id="nur_nennwert"> nur mit Nennwert</label>
+    <label class="schalter"><input type="checkbox" id="nur_schwelle"> nur über Schwelle</label>
+  </div>
+
+  <div class="rolle">
+    <table>
+      <thead><tr>
+        <th data-s="titel">Event</th>
+        <th data-s="datum">Datum</th>
+        <th data-s="stadt">Stadt</th>
+        <th class="num" data-s="popularitaet">Pop.</th>
+        <th class="num" data-s="listings">Listings</th>
+        <th class="num" data-s="nennwert">Nennwert</th>
+        <th class="num" data-s="preis_min">Tiefster</th>
+        <th class="num" data-s="preis_median">Median</th>
+        <th class="num" data-s="aufschlag">Aufschlag</th>
+        <th class="num" data-s="break_even">Break-even</th>
+        <th class="num" data-s="netto">Netto</th>
+        <th class="num" data-s="marge">Marge</th>
+        <th class="num" data-s="tage">Tage</th>
+        <th class="num" data-s="rendite_pa">Rendite p.a.</th>
+        <th>Verlauf</th>
+        <th data-s="beobachtungen">Urteil</th>
+      </tr></thead>
+      <tbody id="tab"></tbody>
+    </table>
+    <div class="leer" id="leer">lädt…</div>
+  </div>
+
+  <div class="raster2">
+    <div class="karte">
+      <h2>Saisonalität</h2>
+      <div class="saison" id="saison"></div>
+      <div class="saison-x" id="saison-x"></div>
+      <p style="font-size:.8rem;color:var(--matt);margin:.9rem 0 0" id="saison-text"></p>
+      <p class="warn">Gekauft wird im Winter, gespielt wird im Sommer, ausgezahlt wird nach dem Event. Dein Kapital ist strukturell lange gebunden.</p>
+    </div>
+    <div class="karte">
+      <h2>Vergleichswerte aus der Recherche</h2>
+      <div style="overflow-x:auto">
+        <table class="bench" style="min-width:0">
+          <tbody id="bench"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <p class="warn" style="margin-top:1.75rem">
+    Alle Preise sind <strong>Angebotspreise</strong>, nicht Verkaufspreise. Sie zeigen, was Verkäufer verlangen, nicht was jemand gezahlt hat. Der tatsächliche Abschluss liegt in der Regel darunter.
+  </p>
+</main>
+
+<footer class="wrap">
+  <div>Daten aus der SeatGeek Platform API und der Ticketmaster Discovery API. Aktualisierung läuft automatisch über GitHub Actions.</div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var daten = null, sortier = "rendite_pa", richtung = -1;
+
+  function zahl(n, stellen){
+    if (n === null || n === undefined || isNaN(n)) return "–";
+    return Number(n).toLocaleString("de-DE", {minimumFractionDigits: stellen, maximumFractionDigits: stellen});
+  }
+  function proz(n){
+    if (n === null || n === undefined || !isFinite(n)) return "–";
+    return (n*100).toLocaleString("de-DE",{maximumFractionDigits:0}) + " %";
+  }
+  function esc(s){
+    return String(s === null || s === undefined ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function median(a){
+    var x = a.filter(function(v){return isFinite(v);}).sort(function(p,q){return p-q;});
+    if (!x.length) return null;
+    var m = Math.floor(x.length/2);
+    return x.length % 2 ? x[m] : (x[m-1]+x[m])/2;
+  }
+
+  function sparkline(verlauf){
+    if (!verlauf || verlauf.length < 2) return '<span style="color:var(--schwach)">–</span>';
+    var werte = verlauf.map(function(p){ return p[1]; });
+    var tief = Math.min.apply(null, werte), hoch = Math.max.apply(null, werte);
+    var spanne = (hoch - tief) || 1;
+    var b = 78, h = 20;
+    var punkte = werte.map(function(v, i){
+      var x = (i / (werte.length - 1)) * b;
+      var y = h - ((v - tief) / spanne) * (h - 3) - 1.5;
+      return x.toFixed(1) + "," + y.toFixed(1);
+    }).join(" ");
+    var steigt = werte[werte.length-1] >= werte[0];
+    var farbe = steigt ? "var(--gruen)" : "var(--rot)";
+    return '<svg class="spark" width="' + b + '" height="' + h + '" viewBox="0 0 ' + b + ' ' + h + '" aria-hidden="true">' +
+           '<polyline fill="none" stroke="' + farbe + '" stroke-width="1.3" points="' + punkte + '"/></svg>';
+  }
+
+  function gefiltert(){
+    var q = document.getElementById("suche").value.toLowerCase().trim();
+    var land = document.getElementById("land").value;
+    var quelle = document.getElementById("quelle").value;
+    var nurN = document.getElementById("nur_nennwert").checked;
+    var nurS = document.getElementById("nur_schwelle").checked;
+    var schwelle = daten.konfiguration.schwelle_aufschlag;
+
+    return daten.events.filter(function(e){
+      if (land && e.land !== land) return false;
+      if (quelle && e.quelle !== quelle) return false;
+      if (nurN && !e.nennwert) return false;
+      if (nurS && !(e.aufschlag && e.aufschlag >= schwelle)) return false;
+      if (q){
+        var heu = ((e.titel||"") + " " + (e.venue||"") + " " + (e.stadt||"")).toLowerCase();
+        if (heu.indexOf(q) === -1) return false;
+      }
+      return true;
+    }).sort(function(a,b){
+      var x = a[sortier], y = b[sortier];
+      if (x === null || x === undefined) return 1;
+      if (y === null || y === undefined) return -1;
+      if (typeof x === "string") return x.localeCompare(y) * richtung;
+      return (x - y) * richtung;
+    });
+  }
+
+  function zeichnen(){
+    var liste = gefiltert();
+    var koerper = document.getElementById("tab");
+    var schwelle = daten.konfiguration.schwelle_aufschlag;
+    koerper.innerHTML = "";
+    document.getElementById("leer").style.display = liste.length ? "none" : "block";
+    document.getElementById("leer").textContent = "Keine Events passen zum Filter.";
+
+    liste.slice(0, 400).forEach(function(e){
+      var urteil = !e.nennwert ? '<span class="pille p-k">Nennwert fehlt</span>'
+        : (e.aufschlag >= schwelle ? '<span class="pille p-ja">prüfen</span>'
+                                   : '<span class="pille p-nein">zu niedrig</span>');
+      var titel = e.url
+        ? '<a href="' + esc(e.url) + '" target="_blank" rel="noopener">' + esc(e.titel) + '</a>'
+        : esc(e.titel);
+
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        '<td class="name">' + titel + '<br><span style="font-size:.75rem;color:var(--schwach)">' + esc(e.venue || "") + '</span></td>' +
+        '<td class="num mono">' + esc(e.datum || "–") + '</td>' +
+        '<td>' + esc(e.stadt || "–") + '</td>' +
+        '<td class="num mono">' + (e.popularitaet !== null && e.popularitaet !== undefined ? zahl(e.popularitaet,3) : "–") + '</td>' +
+        '<td class="num mono">' + (e.listings !== null && e.listings !== undefined ? e.listings : "–") + '</td>' +
+        '<td class="num mono">' + zahl(e.nennwert,2) + '</td>' +
+        '<td class="num mono">' + zahl(e.preis_min,2) + '</td>' +
+        '<td class="num mono">' + zahl(e.preis_median,2) + '</td>' +
+        '<td class="num mono">' + (e.aufschlag ? zahl(e.aufschlag,2) + "×" : "–") + '</td>' +
+        '<td class="num mono">' + zahl(e.break_even,2) + '</td>' +
+        '<td class="num mono">' + zahl(e.netto,2) + '</td>' +
+        '<td class="num mono ' + (e.marge === null ? "" : (e.marge >= 0 ? "pos" : "neg")) + '">' + zahl(e.marge,2) + '</td>' +
+        '<td class="num mono">' + (e.tage === null ? "–" : e.tage) + '</td>' +
+        '<td class="num mono ' + (e.rendite_pa === null ? "" : (e.rendite_pa >= 0 ? "pos" : "neg")) + '">' + proz(e.rendite_pa) + '</td>' +
+        '<td>' + sparkline(e.verlauf) + '</td>' +
+        '<td>' + urteil + '</td>';
+      koerper.appendChild(tr);
+    });
+  }
+
+  function kpis(){
+    var schwelle = daten.konfiguration.schwelle_aufschlag;
+    var mitN = daten.events.filter(function(e){ return e.nennwert && e.preis_min; });
+    var ueber = mitN.filter(function(e){ return e.aufschlag >= schwelle; });
+    document.getElementById("k1").textContent = daten.statistik.events;
+    document.getElementById("k1f").textContent = daten.statistik.mit_nennwert + " mit Nennwert";
+    document.getElementById("k2").textContent = ueber.length;
+    document.getElementById("k2f").textContent = "ab " + zahl(schwelle,2) + "× Aufschlag";
+    var ma = median(mitN.map(function(e){ return e.aufschlag; }));
+    var mr = median(mitN.map(function(e){ return e.rendite_pa; }));
+    document.getElementById("k3").textContent = ma === null ? "–" : zahl(ma,2) + "×";
+    document.getElementById("k4").textContent = mr === null ? "–" : proz(mr);
+    document.getElementById("k5").textContent = (daten.statistik.snapshots_gesamt || 0).toLocaleString("de-DE");
+  }
+
+  function saisonZeichnen(){
+    var namen = ["J","F","M","A","M","J","J","A","S","O","N","D"];
+    var max = Math.max.apply(null, daten.saison.map(function(s){ return s.anzahl; }).concat([1]));
+    var box = document.getElementById("saison"), achse = document.getElementById("saison-x");
+    box.innerHTML = ""; achse.innerHTML = "";
+    daten.saison.forEach(function(s, i){
+      var d = document.createElement("div");
+      d.style.height = Math.max(2, (s.anzahl / max) * 100) + "%";
+      d.title = namen[i] + ": " + s.anzahl + " Events" + (s.median ? ", Median " + zahl(s.median,2) : "");
+      box.appendChild(d);
+      var x = document.createElement("span");
+      x.textContent = namen[i];
+      achse.appendChild(x);
+    });
+    var gesamt = daten.saison.reduce(function(a,s){ return a + s.anzahl; }, 0);
+    document.getElementById("saison-text").textContent = gesamt
+      ? "Grundlage: " + gesamt + " Events mit Nennwert. Lade die Historie, um die Verteilung aussagekräftig zu machen."
+      : "Noch keine historischen Daten. Führe den Backfill aus.";
+  }
+
+  function benchZeichnen(){
+    var tb = document.getElementById("bench");
+    tb.innerHTML = "";
+    daten.benchmarks.forEach(function(b){
+      var tr = document.createElement("tr");
+      tr.innerHTML = '<td style="font-weight:500">' + esc(b.fall) + '<br>' +
+                     '<span style="font-size:.75rem;color:var(--schwach)">' + esc(b.quelle) + '</span></td>' +
+                     '<td class="mono" style="color:var(--bernstein2);white-space:nowrap">' + esc(b.faktor) + '</td>' +
+                     '<td class="mono" style="font-size:.78rem">' + esc(b.zweitmarkt) + '</td>';
+      tb.appendChild(tr);
+    });
+  }
+
+  function filterFuellen(){
+    var laender = {}, quellen = {};
+    daten.events.forEach(function(e){
+      if (e.land) laender[e.land] = 1;
+      if (e.quelle) quellen[e.quelle] = 1;
+    });
+    var sl = document.getElementById("land"), sq = document.getElementById("quelle");
+    Object.keys(laender).sort().forEach(function(l){
+      var o = document.createElement("option"); o.value = l; o.textContent = l; sl.appendChild(o);
+    });
+    Object.keys(quellen).sort().forEach(function(q){
+      var o = document.createElement("option"); o.value = q; o.textContent = q; sq.appendChild(o);
+    });
+  }
+
+  document.querySelectorAll("thead th[data-s]").forEach(function(th){
+    th.addEventListener("click", function(){
+      var feld = th.dataset.s;
+      if (sortier === feld) richtung = -richtung; else { sortier = feld; richtung = -1; }
+      document.querySelectorAll("thead th").forEach(function(x){ x.classList.remove("aktiv"); });
+      th.classList.add("aktiv");
+      zeichnen();
+    });
+  });
+  ["suche","land","quelle","nur_nennwert","nur_schwelle"].forEach(function(id){
+    document.getElementById(id).addEventListener("input", zeichnen);
+  });
+
+  fetch("data.json?t=" + Date.now())
+    .then(function(a){ if (!a.ok) throw new Error("HTTP " + a.status); return a.json(); })
+    .then(function(d){
+      daten = d;
+      var stand = new Date(d.aktualisiert);
+      document.getElementById("stand").textContent =
+        "Stand " + stand.toLocaleString("de-DE", {dateStyle:"medium", timeStyle:"short"});
+      filterFuellen(); kpis(); zeichnen(); saisonZeichnen(); benchZeichnen();
+    })
+    .catch(function(fehler){
+      document.getElementById("leer").textContent =
+        "data.json konnte nicht geladen werden (" + fehler.message + "). Läuft der Workflow schon?";
+      document.getElementById("stand").textContent = "keine Daten";
+    });
+})();
+</script>
+</body>
+</html>
